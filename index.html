@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sistema Café - Flyweight Pattern</title>
+</head>
+<body>
+<div class="container">
+<h1>☕ Sistema Café/Bar - Flyweight Pattern</h1>
+
+<!-- Estatísticas -->
+<div class="stats">
+  <div class="stat" id="flyweights">Flyweights Criados: 0</div>
+  <div class="stat" id="orderItems">Itens de Pedido: 0</div>
+  <div class="stat" id="memSaved">Memória Economizada: 0 KB</div>
+</div>
+
+<!-- Controles -->
+<div class="card">
+<h2>Controles de Simulação</h2>
+<div class="buttons">
+  <button class="add" onclick="addRandomOrder()">+ Adicionar Pedido</button>
+  <button class="bulk-10" onclick="addBulkOrders(10)">+ 10 Pedidos</button>
+  <button class="bulk-100" onclick="addBulkOrders(100)">+ 100 Pedidos</button>
+  <button class="clear" onclick="clearOrders()">Limpar Tudo</button>
+</div>
+</div>
+
+<!-- Lista de pedidos -->
+<div class="card orders" id="ordersList">
+<h2>Pedidos Recentes (<span id="orderCount">0</span>)</h2>
+<div id="ordersContainer">Nenhum pedido ainda. Clique em "Adicionar Pedido".</div>
+</div>
+
+<!-- Explicação -->
+<div class="card">
+<h3>🎓 Como Funciona o Flyweight</h3>
+<ul>
+<li><strong>Estado Intrínseco:</strong> Dados compartilhados (nome, categoria, preço-base, ingredientes)</li>
+<li><strong>Estado Extrínseco:</strong> Dados únicos (quantidade, mesa, customizações, horário)</li>
+<li><strong>Economia:</strong> 100 pedidos de "Espresso" = 1 objeto Flyweight + 100 referências leves</li>
+<li><strong>Factory:</strong> Garante que cada produto único seja criado apenas uma vez</li>
+</ul>
+</div>
+</div>
+
+<script>
+const ordersContainer = document.getElementById('ordersContainer');
+const orderCountSpan = document.getElementById('orderCount');
+const flyweightsDiv = document.getElementById('flyweights');
+const orderItemsDiv = document.getElementById('orderItems');
+const memSavedDiv = document.getElementById('memSaved');
+
+let orders = [];
+let flyweightsCount = 0;
+let totalOrders = 0;
+
+const factory = {
+  products: new Map(),
+  getProduct(id, name, category, basePrice, prepTime, ingredients, icon) {
+    if (!this.products.has(id)) {
+      this.products.set(id, {
+        id, name, category, basePrice, prepTime, ingredients, icon
+      });
+      flyweightsCount++;
+    }
+    return this.products.get(id);
+  }
+};
+
+function addRandomOrder() {
+  const tables = [1, 2, 3, 4, 5, 6, 7, 8];
+  const products = [
+    { id: 'esp', name: 'Espresso', category: 'Café', price: 4.50, time:2, ing:['Café'], icon:'☕' },
+    { id: 'cap', name: 'Cappuccino', category: 'Café', price: 6.00, time:3, ing:['Café', 'Leite', 'Espuma'], icon:'☕' },
+    { id: 'lat', name: 'Latte', category: 'Café', price: 6.50, time:3, ing:['Café', 'Leite'], icon:'☕' },
+    { id: 'moc', name: 'Mocha', category: 'Café', price: 7.50, time:4, ing:['Café', 'Chocolate', 'Leite'], icon:'☕' },
+    { id: 'ice', name: 'Sorvete', category: 'Sobremesa', price: 8.00, time:1, ing:['Creme', 'Açúcar'], icon:'🍨' },
+    { id: 'san', name: 'Sanduíche', category: 'Comida', price: 12.00, time:5, ing:['Pão', 'Queijo', 'Presunto'], icon:'🥪' }
+  ];
+
+  const customizationsOptions = [
+    { id: 'extra-shot', name: 'Shot Extra', price: 2.00 },
+    { id: 'soy-milk', name: 'Leite de Soja', price: 1.50 },
+    { id: 'whipped-cream', name: 'Chantilly', price: 1.00 }
+  ];
+
+  const randomProduct = products[Math.floor(Math.random() * products.length)];
+  const randomTable = tables[Math.floor(Math.random() * tables.length)];
+  const quantity = Math.floor(Math.random() * 3) +1;
+
+  // Customizações aleatórias
+  const customizations = [];
+  if (Math.random() > 0.5) {
+    customizations.push( customizationsOptions[Math.floor(Math.random() * customizationsOptions.length)] );
+  }
+
+  // Obtém ou cria o produto (Flyweight)
+  const product = factory.getProduct(
+    randomProduct.id,
+    randomProduct.name,
+    randomProduct.category,
+    randomProduct.price,
+    randomProduct.time,
+    randomProduct.ing,
+    randomProduct.icon
+  );
+
+  const timestamp = new Date().toLocaleTimeString();
+
+  const order = {
+    product,
+    quantity,
+    customizations,
+    tableNumber: randomTable,
+    timestamp,
+    getTotalPrice() {
+      let total = this.product.basePrice;
+      this.customizations.forEach(c => total += c.price);
+      return total * this.quantity;
+    }
+  };
+
+  orders.push(order);
+  totalOrders++;
+  updateDisplay();
+  updateStats();
+}
+
+// Adiciona múltiplos pedidos
+function addBulkOrders(count) {
+  for(let i=0; i<count; i++) addRandomOrder();
+}
+
+function updateDisplay() {
+  document.getElementById('orderCount').innerText = orders.length;
+  ordersContainer.innerHTML = '';
+
+  if (orders.length === 0) {
+    ordersContainer.innerHTML = 'Nenhum pedido ainda. Clique em "Adicionar Pedido".';
+    return;
+  }
+  const recent = orders.slice(-50).reverse();
+  recent.forEach((order, idx) => {
+    const div = document.createElement('div');
+    div.className = 'order';
+
+    // Ícone
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'icon';
+    iconSpan.textContent = order.product.icon;
+
+    // Detalhes
+    const detailsDiv = document.createElement('div');
+    detailsDiv.className = 'order-details';
+
+    const desc = document.createElement('div');
+    desc.className = 'info';
+    desc.innerHTML = `<strong>${order.quantity}x ${order.product.name}</strong><br/>Mesa ${order.tableNumber} • ${order.product.category} • ${order.timestamp}`;
+    if (order.customizations.length > 0) {
+      const extras = order.customizations.map(c => c.name).join(', ');
+      desc.innerHTML += `<br/><small>+ ${extras}</small>`;
+    }
+
+    // Preço
+    const priceDiv = document.createElement('div');
+    priceDiv.style.textAlign = 'right';
+    priceDiv.innerHTML = `<div style="font-size:1.2rem; font-weight:bold; color:green;">R$ ${order.getTotalPrice().toFixed(2)}</div>
+                          <div style="font-size:0.8rem; color:gray;">${order.product.prepTime * order.quantity} min</div>`;
+
+    detailsDiv.appendChild(desc);
+    div.appendChild(iconSpan);
+    div.appendChild(detailsDiv);
+    div.appendChild(priceDiv);
+    ordersContainer.appendChild(div);
+  });
+}
+
+function updateStats() {
+  // Memória economizada estimada
+  const ordersCount = orders.length;
+  const bytesPerProduct = 200; // estimativa
+  const bytesPerRef = 8;
+  const withoutFlyweight = ordersCount * bytesPerProduct;
+  const withFlyweight = (flyweightsCount * bytesPerProduct) + (ordersCount * bytesPerRef);
+  const savedKB = ((withoutFlyweight - withFlyweight)/1024).toFixed(2);
+
+  flyweightsDiv.innerText = `Flyweights Criados: ${flyweightsCount}`;
+  orderItemsDiv.innerText = `Itens de Pedido: ${ordersCount}`;
+  memSavedDiv.innerText = `Memória Economizada: ${savedKB} KB`;
+}
+
+function clearOrders() {
+  orders = [];
+  updateDisplay();
+  updateStats();
+}
+</script>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to-br, #ffe8b4, #ffb347);
+    color: #1a5f4f;
+  }
+  .container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .stats {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-around;
+  }
+  .stat {
+    background: #319b8a;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+  }
+  .buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  button:hover {
+    opacity: 0.8;
+  }
+  .add {
+    background-color: #ffb347;
+    color: #fff;
+  }
+  .bulk-10 {
+    background-color: #fba443;
+    color: #fff;
+  }
+  .bulk-100 {
+    background-color: #f55b4c;
+    color: #fff;
+  }
+  .clear {
+    background-color: #7c7c7c;
+    color: #fff;
+  }
+  .orders {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .order {
+    background: #f0f0f0;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .icon {
+    font-size: 1.5rem;
+  }
+  .info {
+    display: flex;
+    flex-direction: column;
+  }
+  h3 {
+    margin-top: 2rem;
+  }
+  ul {
+    padding-left: 20px;
+  }
+</style>
+</body>
+</html>
