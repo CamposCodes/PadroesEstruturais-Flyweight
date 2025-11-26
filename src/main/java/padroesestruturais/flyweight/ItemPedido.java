@@ -31,18 +31,29 @@ public class ItemPedido {
     }
 
     public double calcularPrecoTotal() {
-        double preco = produto.getPrecoBase() * quantidade;
+        double multiplicador = 1.0;
+        if (tamanho != null) {
+            if ("Pequeno".equalsIgnoreCase(tamanho)) {
+                multiplicador = 1.0;
+            } else if ("Médio".equalsIgnoreCase(tamanho) || "Medio".equalsIgnoreCase(tamanho) || "Medio".equalsIgnoreCase(tamanho)) {
+                multiplicador = 1.1;
+            } else if ("Grande".equalsIgnoreCase(tamanho)) {
+                multiplicador = 1.2;
+            }
+        }
+
+        double preco = produto.getPrecoBase() * multiplicador * quantidade;
         return preco - desconto;
     }
 
     @Override
     public String toString() {
-        return "ItemPedido{\" +
-                "produto='" + produto.getNome() + '\'' +
-                ", quantidade=" + quantidade +
-                ", tamanho='" + tamanho + '\'' +
-                ", desconto=" + desconto +
-                ", precoTotal=" + calcularPrecoTotal() +
-                '}';
+        return "ItemPedido{" +
+            "produto='" + produto.getNome() + '\'' +
+            ", quantidade=" + quantidade +
+            ", tamanho='" + tamanho + '\'' +
+            ", desconto=" + desconto +
+            ", precoTotal=" + calcularPrecoTotal() +
+            "}";
     }
 }

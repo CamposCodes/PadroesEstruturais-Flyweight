@@ -10,10 +10,30 @@
 <h1>☕ Sistema Café/Bar - Flyweight Pattern</h1>
 
 <!-- Estatísticas -->
-<div class="stats">
-  <div class="stat" id="flyweights">Flyweights Criados: 0</div>
-  <div class="stat" id="orderItems">Itens de Pedido: 0</div>
-  <div class="stat" id="memSaved">Memória Economizada: 0 KB</div>
+<div class="stats" role="region" aria-label="Estatísticas do Flyweight">
+  <div class="stat" id="flyweights" aria-live="polite">
+    <div class="stat-icon">⚙️</div>
+    <div class="stat-content">
+      <div class="stat-number">0</div>
+      <div class="stat-label">Flyweights Criados</div>
+    </div>
+  </div>
+
+  <div class="stat" id="orderItems" aria-live="polite">
+    <div class="stat-icon">🧾</div>
+    <div class="stat-content">
+      <div class="stat-number">0</div>
+      <div class="stat-label">Itens de Pedido</div>
+    </div>
+  </div>
+
+  <div class="stat" id="memSaved" aria-live="polite">
+    <div class="stat-icon">💾</div>
+    <div class="stat-content">
+      <div class="stat-number">0 KB</div>
+      <div class="stat-label">Memória Economizada</div>
+    </div>
+  </div>
 </div>
 
 <!-- Controles -->
@@ -165,9 +185,9 @@ function updateDisplay() {
 
     // Preço
     const priceDiv = document.createElement('div');
-    priceDiv.style.textAlign = 'right';
-    priceDiv.innerHTML = `<div style="font-size:1.2rem; font-weight:bold; color:green;">R$ ${order.getTotalPrice().toFixed(2)}</div>
-                          <div style="font-size:0.8rem; color:gray;">${order.product.prepTime * order.quantity} min</div>`;
+    priceDiv.className = 'price';
+    priceDiv.innerHTML = `<div class="value">R$ ${order.getTotalPrice().toFixed(2)}</div>
+                <div class="time">${order.product.prepTime * order.quantity} min</div>`;
 
     detailsDiv.appendChild(desc);
     div.appendChild(iconSpan);
@@ -186,9 +206,14 @@ function updateStats() {
   const withFlyweight = (flyweightsCount * bytesPerProduct) + (ordersCount * bytesPerRef);
   const savedKB = ((withoutFlyweight - withFlyweight)/1024).toFixed(2);
 
-  flyweightsDiv.innerText = `Flyweights Criados: ${flyweightsCount}`;
-  orderItemsDiv.innerText = `Itens de Pedido: ${ordersCount}`;
-  memSavedDiv.innerText = `Memória Economizada: ${savedKB} KB`;
+  // Atualiza números dentro dos cartões (preserva ícones e labels)
+  const setStat = (el, value, suffix = '') => {
+    const num = el.querySelector('.stat-number');
+    if (num) num.innerText = value + (suffix || '');
+  };
+  setStat(flyweightsDiv, flyweightsCount);
+  setStat(orderItemsDiv, ordersCount);
+  setStat(memSavedDiv, savedKB, ' KB');
 }
 
 function clearOrders() {
@@ -198,104 +223,98 @@ function clearOrders() {
 }
 </script>
 <style>
+  :root{
+    --bg:#f6f8fa;
+    --surface:#ffffff;
+    --muted:#6a737d;
+    --border:#e1e4e8;
+    --accent:#0366d6;
+    --success:#28a745;
+    --shadow: 0 1px 2px rgba(27,31,35,0.04), 0 8px 24px rgba(27,31,35,0.08);
+  }
+  html,body{height:100%;}
   body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to-br, #ffe8b4, #ffb347);
-    color: #1a5f4f;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: var(--bg);
+    color: #24292e;
+    -webkit-font-smoothing:antialiased;
   }
   .container {
-    max-width: 1200px;
-    margin: auto;
+    max-width: 1100px;
+    margin: 32px auto;
     padding: 20px;
   }
   h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.6rem;
+    margin: 0 0 8px 0;
+    color: #0b2d4a;
   }
   .card {
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  .stats {
-    display: flex;
-    gap: 1rem;
-    justify-content: space-around;
-  }
-  .stat {
-    background: #319b8a;
-    color: white;
-    padding: 15px;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    flex: 1;
-    text-align: center;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    margin-bottom: 18px;
   }
-  .buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 10px;
+  /* Estatísticas em grid responsivo */
+  .stats{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 12px;
+    margin-bottom: 14px;
   }
-  button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s;
+  .stat{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:14px;
+    border-radius:10px;
+    background: linear-gradient(180deg, #ffffff, #fbfdff);
+    border: 1px solid var(--border);
   }
-  button:hover {
-    opacity: 0.8;
+  .stat-icon{
+    width:56px;
+    height:56px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.4rem;
+    background: rgba(3,102,214,0.08);
+    color: var(--accent);
+    flex-shrink:0;
   }
-  .add {
-    background-color: #ffb347;
-    color: #fff;
-  }
-  .bulk-10 {
-    background-color: #fba443;
-    color: #fff;
-  }
-  .bulk-100 {
-    background-color: #f55b4c;
-    color: #fff;
-  }
-  .clear {
-    background-color: #7c7c7c;
-    color: #fff;
-  }
-  .orders {
-    max-height: 300px;
-    overflow-y: auto;
-  }
-  .order {
-    background: #f0f0f0;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .order-details {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .icon {
-    font-size: 1.5rem;
-  }
-  .info {
-    display: flex;
-    flex-direction: column;
-  }
-  h3 {
-    margin-top: 2rem;
-  }
-  ul {
-    padding-left: 20px;
+  .stat-content{display:flex;flex-direction:column}
+  .stat-number{font-size:1.4rem;font-weight:700;color:#092a4a}
+  .stat-label{font-size:0.85rem;color:var(--muted);margin-top:4px}
+
+  .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  button{padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-weight:600}
+  button.add{background:var(--accent);color:#fff;border-color:transparent}
+  button.bulk-10{background:#2ea44f;color:#fff}
+  button.bulk-100{background:#bf3b44;color:#fff}
+  button.clear{background:transparent}
+  button:hover{opacity:0.95}
+
+  .orders{max-height:360px;overflow-y:auto}
+  .order{display:flex;gap:12px;align-items:center;padding:12px;border-radius:8px;border:1px solid var(--border);background:linear-gradient(180deg,#fff,#fcfeff);margin-top:10px}
+  .order .icon{width:48px;height:48px;border-radius:8px;background:linear-gradient(180deg,#f1f7fd,#fff);display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+  .order .order-details{flex:1}
+  .order .order-details .info{display:flex;flex-direction:column}
+  .order .order-details .info strong{font-size:1rem;color:#092a4a}
+  .order .price{min-width:110px;text-align:right}
+  .order .price .value{font-weight:700;color:var(--success);font-size:1.05rem}
+
+  h3{margin-top:18px}
+  ul{padding-left:18px}
+
+  /* Responsividade */
+  @media (max-width:800px){
+    .stats{grid-template-columns:1fr}
+    .order{flex-direction:column;align-items:flex-start}
+    .order .price{text-align:left;width:100%}
   }
 </style>
 </body>

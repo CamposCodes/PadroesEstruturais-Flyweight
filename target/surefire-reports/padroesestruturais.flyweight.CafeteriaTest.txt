@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: padroesestruturais.flyweight.CafeteriaTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.122 s - in padroesestruturais.flyweight.CafeteriaTest
