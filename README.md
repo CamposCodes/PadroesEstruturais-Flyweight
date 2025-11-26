@@ -8,10 +8,6 @@
 
 <h3 align="center">DCC078-2025.3-A — Aspectos Avançados em Engenharia de Software (UFJF/ICE)</h3>
 
-<p align="center">
-	<img src="./screenshot.png" alt="Captura da interface - Demonstração Flyweight" width="900" />
-</p>
-
 ---
 
 ## 📝 Sumário
@@ -38,6 +34,9 @@ Implementação do padrão **Flyweight** aplicada a um sistema de pedidos de caf
 - Exposição de métricas simples (total de produtos distintos carregados)
 
 Também há uma interface de demonstração inclusa: [Interface de Demonstração (GitHub Pages)](https://camposcodes.github.io/PadroesEstruturais-Flyweight/)
+<p align="center">
+	<img src="./screenshot.png" alt="Captura da interface - Demonstração Flyweight" width="900" />
+</p>
 
 ## 📐 Diagrama de Classe <a name="diagrama"></a>
 O diagrama abaixo representa a arquitetura do projeto, enfatizando a fábrica de produtos e o uso do padrão **Flyweight**:
